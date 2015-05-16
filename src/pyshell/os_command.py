@@ -1,4 +1,4 @@
-from shell_commands.command import Command
+from .command import Command
 
 class OperatingSystemCommand( Command ):
     def __init__( self, moniker, parameters, *options, **kwargs ):
