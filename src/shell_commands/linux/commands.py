@@ -1,13 +1,13 @@
-from ..command import Command
+from ..os_command import OperatingSystemCommand
 
-class LinuxCommand( Command ):
-    def __init__( self, executable_name, parameters = None, *options ):
-        Command.__init__( self, executable_name, parameters, *options )
+class LinuxCommand( OperatingSystemCommand ):
+    def __init__( self, moniker, parameters, *options, **kwargs ):
+        OperatingSystemCommand.__init__( self, moniker, parameters, *options, **kwargs )
 
 class SudoCommand( LinuxCommand ):
-    def __init__( self, command, *options ):
+    def __init__( self, command, *options, **kwargs ):
         self.command = command
-        LinuxCommand.__init__( self, "sudo", command.terms, *options )
+        LinuxCommand.__init__( self, "sudo", command.terms, *options, **kwargs )
 
     def get_command( self ):
         return self._command
@@ -17,27 +17,14 @@ class SudoCommand( LinuxCommand ):
 
     command = property( get_command, set_command, None, None )
 
-class ChangeDirectoryCommand( LinuxCommand ):
-    def __init__( self, path, *options ):
-        self.path = path
-        LinuxCommand.__init__( self, "cd", [ path ], *options )
-
-    def get_path( self ):
-        return self._path
-
-    def set_path( self, value ):
-        self._path = value
-
-    path = property( get_path, set_path, None, None )
-
 class ServiceCommand( LinuxCommand ):
     class Operations( object ):
         Start = "start"
         Stop = "stop"
         Restart = "restart"
 
-    def __init__( self, service_name, operation, *options ):
-        LinuxCommand.__init__( self, "service", [ service_name, operation ], *options )
+    def __init__( self, service_name, operation, *options, **kwargs ):
+        LinuxCommand.__init__( self, "service", [ service_name, operation ], *options, **kwargs )
 
     def get_service_name( self ):
         return self._service_name
@@ -67,12 +54,36 @@ class MakeCommand( LinuxCommand ):
             if value is not None:
                 parameters.append( value )
 
-        LinuxCommand.__init__( self, "make", parameters, *options )
+        LinuxCommand.__init__( self, "make", parameters, *options, **kwargs )
 
-    def get_target( self ):
-        return self._target
+    def get_directory( self ):
+        return self._directory
 
-    def set_target( self, value ):
-        self._target = value
+    def set_directory( self, value ):
+        self._directory = value
 
-    target = property( get_target, set_target, None, None )
+    directory = property( get_directory, set_directory, None, None )
+
+class ListDirectoryCommand( LinuxCommand ):
+    class OptionalParameters( object ):
+        Directory = "dir"
+
+    def __init__( self, *options, **kwargs ):
+        parameters = []
+
+        key = ListDirectoryCommand.OptionalParameters.Directory
+        if key in kwargs:
+            value = kwargs[ key ]
+            if value is not None:
+                parameters.append( value )
+
+        LinuxCommand.__init__( self, "ls", parameters, *options, **kwargs )
+
+    def get_directory( self ):
+        return self._directory
+
+    def set_directory( self, value ):
+        self._directory = value
+
+    directory = property( get_directory, set_directory, None, None )
+

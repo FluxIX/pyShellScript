@@ -1,9 +1,9 @@
 class Command( object ):
-    def __init__( self, executable_name, parameters = None, *options ):
-        self.executable_name = executable_name
+    def __init__( self, moniker, parameters, *options, **kwargs ):
+        self.moniker = moniker
 
         if parameters is not None:
-            self.parameters = parameters
+            self.parameters = parameters[:]
         else:
             self.parameters = []
 
@@ -12,11 +12,11 @@ class Command( object ):
         else:
             self._options = []
 
-    def get_executable_name( self ):
-        return self._executable_name
+    def get_moniker( self ):
+        return self._moniker
 
-    def set_executable_name( self, value ):
-        self._executable_name = value
+    def set_moniker( self, value ):
+        self._moniker = value
 
     def get_parameters( self ):
         return self._parameters
@@ -30,16 +30,19 @@ class Command( object ):
     def set_options( self, value ):
         self._options = value
 
-    executable_name = property( get_executable_name, set_executable_name, None, None )
+    moniker = property( get_moniker, set_moniker, None, None )
     parameters = property( get_parameters, set_parameters, None, None )
     options = property( get_options, set_options, None, None )
 
     @property
     def terms( self ):
-        result = [ self.executable_name ]
+        result = [ self.moniker ]
         result.extend( self.options )
         result.extend( self.parameters )
         return result
 
     def __str__( self, *args, **kwargs ):
         return " ".join( self.terms )
+
+    def execute( self ):
+        raise NotImplementedError( "Must be implemented in a child class." )
