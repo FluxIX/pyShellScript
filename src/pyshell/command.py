@@ -1,4 +1,11 @@
+from .exceptions import ExecutionException
+
 class Command( object ):
+    class States( object ):
+        Initialized = 0
+        Executing = 1
+        Executed = 2
+
     def __init__( self, moniker, parameters, *options, **kwargs ):
         self.moniker = moniker
 
@@ -8,31 +15,54 @@ class Command( object ):
             self.parameters = []
 
         if options is not None and len( options ) > 0:
-            self._options = options
+            self.options = options
         else:
-            self._options = []
+            self.options = []
+
+        self.state = Command.States.Initialized
+
+    def get_state( self ):
+        return self.__state
+
+    def set_state( self, value ):
+        self.__state = value
+
+    def _get_command_executer( self ):
+        return self.__command_executer
+
+    def _set_command_executer( self, value ):
+        self.__command_executer = value
+
+    def get_environment( self ):
+        return self.__environment
+
+    def set_environment( self, value ):
+        self.__environment = value
 
     def get_moniker( self ):
-        return self._moniker
+        return self.__moniker
 
     def set_moniker( self, value ):
-        self._moniker = value
+        self.__moniker = value
 
     def get_parameters( self ):
-        return self._parameters
+        return self.__parameters
 
     def set_parameters( self, value ):
-        self._parameters = value
+        self.__parameters = value
 
     def get_options( self ):
-        return self._options
+        return self.__options
 
     def set_options( self, value ):
-        self._options = value
+        self.__options = value
 
     moniker = property( get_moniker, set_moniker, None, None )
     parameters = property( get_parameters, set_parameters, None, None )
     options = property( get_options, set_options, None, None )
+    _command_executer = property( _get_command_executer, _set_command_executer, None, None )
+    environment = property( get_environment, set_environment, None, None )
+    state = property( get_state, set_state, None, None )
 
     @property
     def terms( self ):
@@ -44,5 +74,18 @@ class Command( object ):
     def __str__( self, *args, **kwargs ):
         return " ".join( self.terms )
 
-    def execute( self ):
+    def execute( self, command_executer ):
+        if self.state is Command.States.Initialized:
+            self.state = Command.States.Executing
+
+            self._command_executer = command_executer
+            self.environment = self._command_executer.current_environment
+
+            self._do()
+
+            self.state = Command.States.Executed
+        else:
+            raise ExecutionException( "Unable to execute: command is in an incorrect state." )
+
+    def _do( self ):
         raise NotImplementedError( "Must be implemented in a child class." )

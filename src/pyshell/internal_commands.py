@@ -13,6 +13,6 @@ class ChangeDirectoryCommand( InternalCommand ):
 
     path = property( get_path, set_path, None, None )
 
-    def execute( self ):
+    def _do( self ):
         import os
         os.chdir( self.path )

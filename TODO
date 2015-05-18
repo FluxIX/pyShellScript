@@ -1,14 +1,7 @@
 - Add the 'unexecute' methods. This makes the shell undoable.
 - Add a translation table to convert the python shell commands into operating system commands.
-- Add an environment object for storing the environment data. Could be as simple as a dict.
-	- execute( environment )
-	- unexecute( environment = None )
-	- clone()
-	- Needs current CommandExecuter variable
-	- Needs read-only current directory variable (the ChangeDirectoryCommand alters the VM current directory, so variable can simply call os.get_cwd())
-- Add environment stack to the CommandExecuter
 - Add an execution_status property
-	- Options: Initialized, Executed, Unexecuted
+	- Options: Initialized, Executing, Executed, Unexecuting, Unexecuted
 - Add a history to the CommandExecuter. Internal commands would have to be written to interact with it (possibly only view it).
 - Add the options as enumerations to the commands.
 
