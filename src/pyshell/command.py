@@ -4,7 +4,8 @@ class Command( object ):
     class States( object ):
         Initialized = 0
         Executing = 1
-        Executed = 2
+        SuccessfulExecution = 2
+        FailedExecution = 3
 
     def __init__( self, moniker, parameters, *options, **kwargs ):
         self.moniker = moniker
@@ -81,9 +82,17 @@ class Command( object ):
             self._command_executer = command_executer
             self.environment = self._command_executer.current_environment
 
-            self._do()
+            execution_result = self._do()
+            if execution_result is None or execution_result:
+                result = True
+                state = Command.States.SuccessfulExecution
+            else:
+                result = False
+                state = Command.States.FailedExecution
 
-            self.state = Command.States.Executed
+            self.state = state
+
+            return result
         else:
             raise ExecutionException( "Unable to execute: command is in an incorrect state." )
 

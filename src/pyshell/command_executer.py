@@ -32,8 +32,17 @@ class CommandExecuter( object ):
 
     def execute_command( self, command ):
 #        print( "Executing command: " + str( command ) )
-        command.execute( self )
+        return command.execute( self )
 
-    def execute_commands( self, commands ):
+    def execute_commands( self, commands, stopOnError = True ):
+        result = True
+
         for command in commands:
-            self.execute_command( command )
+            execution_result = self.execute_command( command )
+
+            result = result and execution_result
+
+            if not execution_result and stopOnError:
+                break
+
+        return result
