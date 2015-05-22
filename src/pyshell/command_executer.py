@@ -6,6 +6,7 @@ class CommandExecuter( object ):
             environment = EnvironmentBuilder().build()
 
         self.environment_stack = [ environment ]
+        self.history = []
 
     def _get_environment_stack( self ):
         return self.__environment_stack
@@ -14,7 +15,7 @@ class CommandExecuter( object ):
         if value is not None:
             self.__environment_stack = value
         else:
-            raise ValueError( "Environment stack cannot be None" )
+            raise ValueError( "Environment stack cannot be None." )
 
     environment_stack = property( _get_environment_stack, _set_environment_stack, None, None )
 
@@ -30,9 +31,25 @@ class CommandExecuter( object ):
     def current_environment( self ):
         return self.environment_stack[ -1 ]
 
+    def get_history( self ):
+        return self.__history
+
+    def _set_history( self, value ):
+        if value is not None:
+            self.__history = value
+        else:
+            raise ValueError( "History cannot be None." )
+
+    history = property( get_history, _set_history, None, None )
+
     def execute_command( self, command ):
 #        print( "Executing command: " + str( command ) )
-        return command.execute( self )
+        result = command.execute( self )
+
+        if result:
+            self.history.append( command )
+
+        return result
 
     def execute_commands( self, commands, stopOnError = True ):
         result = True
