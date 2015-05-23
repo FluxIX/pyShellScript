@@ -15,6 +15,10 @@ class ExecutionException( Exception ):
 
     message = property( get_message, set_message, None, None )
 
+class ExecutionValueException( ExecutionException ):
+    def __init__( self, message ):
+        ExecutionException.__init__( self, message )
+
 class NotSupportPlatformException( Exception ):
     def __init__( self, message ):
         self.message = message
