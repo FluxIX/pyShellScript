@@ -98,3 +98,16 @@ class Command( object ):
 
     def _do( self ):
         raise NotImplementedError( "Must be implemented in a child class." )
+
+    def _get_value( self, dictionary, key, default_value = None, typecast_funct = None ):
+        if key in dictionary:
+            value = dictionary[ key ]
+            result = value
+        else:
+            result = default_value
+
+        if result is not None and typecast_funct is not None:
+            result = typecast_funct( result )
+
+        return result
+
