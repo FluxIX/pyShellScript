@@ -19,14 +19,6 @@ class CommandExecuter( object ):
 
     environment_stack = property( _get_environment_stack, _set_environment_stack, None, None )
 
-    def create_child_environment( self, **kwargs ):
-        child = self.current_environment.clone( **kwargs )
-        self.environment_stack.append( child )
-
-    def pop_environment( self ):
-        result = self.environment_stack.pop
-        return result
-
     @property
     def current_environment( self ):
         return self.environment_stack[ -1 ]
