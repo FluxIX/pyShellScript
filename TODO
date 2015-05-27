@@ -1,7 +1,8 @@
 - Add the 'unexecute' methods. This makes the shell undoable.
+- Add transactions. Implement as an internal command.
 - Add a translation table to convert the python shell commands into operating system commands.
 - Add an execution_status property
 	- Options: Initialized, Executing, Executed, Unexecuting, Unexecuted
 - Add a history to the CommandExecuter. Internal commands would have to be written to interact with it (possibly only view it).
 - Add the options as enumerations to the commands.
-
+- Add stream redirection commands.
