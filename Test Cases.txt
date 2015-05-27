@@ -1,0 +1,1 @@
+- Clone an environment inheriting the streams. Push the cloned environment. Set autoclose_streams = True. Pop the environment. Test writing the the streams still works (it should).
