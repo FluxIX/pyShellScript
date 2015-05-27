@@ -8,6 +8,8 @@ class CommandExecuter( object ):
         self.environment_stack = [ environment ]
         self.history = []
 
+        self.current_environment._attach()
+
     def _get_environment_stack( self ):
         return self.__environment_stack
 
@@ -35,7 +37,7 @@ class CommandExecuter( object ):
     history = property( get_history, _set_history, None, None )
 
     def execute_command( self, command ):
-#        print( "Executing command: " + str( command ) )
+#        print( "Executing command: %s" % str( command ) )
         result = command.execute( self )
 
         if result:

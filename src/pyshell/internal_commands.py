@@ -128,6 +128,8 @@ class PushEnvironmentCommand( InternalCommand ):
 
         self._command_executer.environment_stack.push( self.new_environment )
 
+        self._command_executer.current_environment._attach()
+
 class PopEnvironmentCommand( InternalCommand ):
     def __init__( self, quantity = 1, *options, **kwargs ):
         if quantity < 0:
@@ -155,6 +157,7 @@ class PopEnvironmentCommand( InternalCommand ):
 
         i = 0
         while i < quantity:
+            self._command_executer.current_environment._detach()
             last_environment = self._command_executer.environment_stack.pop()
             i += 1
 

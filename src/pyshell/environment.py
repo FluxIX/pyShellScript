@@ -1,9 +1,12 @@
+from .tee_output_file import TeeOutputFile
+
 class Environment( object ):
     class CloneOptions( object ):
-        InheritVariables = "inherit"
+        InheritVariables = "inherit_vars"
+        InheritStreams = "inherit_streams"
         MakeParentLink = "parent_link"
 
-    def __init__( self, starting_directory = None, parent = None, starting_variables = None ):
+    def __init__( self, starting_directory = None, parent = None, starting_variables = None, standard_output = None, error_output = None ):
         if starting_directory is None:
             import os
             starting_directory = os.curdir
@@ -17,6 +20,21 @@ class Environment( object ):
             starting_variables = {}
 
         self.variables = starting_variables
+
+        if standard_output is None:
+            standard_output = TeeOutputFile()
+        self.__standard_output = standard_output
+
+        if error_output is None:
+            error_output = TeeOutputFile()
+        self.__error_output = error_output
+
+        self._attached = False
+
+    def __del__( self ):
+        self._detach()
+        del self.standard_output
+        del self.error_output
 
     def get_directory_stack( self ):
         return self.__directory_stack
@@ -102,10 +120,52 @@ class Environment( object ):
 
         variables = {}
         if inherit_vars:
-            for key in self.variables.keys():
+            for key in self.variables:
                 variables[ key ] = self.variables[ key ]
 
+        raise NotImplementedError( "Need to check for stream inheritance." )
+
         result = Environment( self.current_directory, parent, variables )
+
+        return result
+
+    @property
+    def standard_output( self ):
+        return self.__standard_output
+
+    @property
+    def error_output( self ):
+        return self.__error_output
+
+    def _attach( self ):
+        result = not self._attached
+
+        if result:
+            import os
+            import sys
+            self._previous_working_directory = os.getcwd()
+            self._previous_standard_output = sys.stdout
+            self._previous_error_output = sys.stderr
+
+            os.chdir( self.current_directory )
+            sys.stdout = self.standard_output
+            sys.stderr = self.error_output
+
+            self._attached = True
+
+        return result
+
+    def _detach( self ):
+        result = self._attached
+
+        if result:
+            import os
+            import sys
+            os.chdir( self._previous_working_directory )
+            sys.stdout = self._previous_standard_output
+            sys.stderr = self._previous_error_output
+
+            self._attached = False
 
         return result
 
@@ -114,6 +174,8 @@ class EnvironmentBuilder( object ):
         self.starting_directory = None
         self.parent = None
         self.starting_variables = None
+        self.standard_output = None
+        self.error_output = None
 
     def get_starting_directory( self ):
         return self.__starting_directory
@@ -142,5 +204,25 @@ class EnvironmentBuilder( object ):
 
     starting_variables = property( get_starting_variables, set_starting_variables, None, None )
 
+    def get_standard_output( self ):
+        return self.__standard_output
+
+    def set_standard_output( self, value ):
+        self.__standard_output = value
+
+    standard_output = property( get_standard_output, set_standard_output, None, None )
+
+    def get_error_output( self ):
+        return self.__error_output
+
+    def set_error_output( self, value ):
+        self.__error_output = value
+
+    error_output = property( get_error_output, set_error_output, None, None )
+
+    def inherit_starting_variables( self ):
+        raise NotImplementedError( "Add all of the current environment variables to the new environment." )
+        return self
+
     def build( self ):
-        return Environment( self.starting_directory, self.parent, self.starting_variables )
+        return Environment( self.starting_directory, self.parent, self.starting_variables, self.standard_output, self.error_output )
