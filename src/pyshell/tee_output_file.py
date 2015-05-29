@@ -137,6 +137,20 @@ class TeeOutputFile( object ):
 
             return result
 
+    def clone( self ):
+        """
+        Clones the current TeeOutputFile. A new list of streams is made, but the stream references are the same.
+        """
+
+        result = TeeOutputFile( self.autoclose_streams )
+
+        result.errors = self.errors
+        result.softspace = self.softspace
+        result.__closed = self.closed
+        result.streams = self.streams[:]
+
+        return result
+
 class TeeOutputFileBuilder( object ):
     def __init__( self ):
         self.autoclose_streams = False
