@@ -103,13 +103,13 @@ class Environment( object ):
     def clone( self, **kwargs ):
         key = Environment.CloneOptions.InheritVariables
         if key in kwargs:
-            inherit_vars = kwargs[ key ]
+            inherit_vars = bool( kwargs[ key ] )
         else:
             inherit_vars = False
 
         key = Environment.CloneOptions.MakeParentLink
         if key in kwargs:
-            parent_link = kwargs[ key ]
+            parent_link = bool( kwargs[ key ] )
         else:
             parent_link = False
 
@@ -123,9 +123,20 @@ class Environment( object ):
             for key in self.variables:
                 variables[ key ] = self.variables[ key ]
 
-        raise NotImplementedError( "Need to check for stream inheritance." )
+        key = Environment.CloneOptions.InheritStreams
+        if key in kwargs:
+            inherit_streams = bool( kwargs[ key ] )
+        else:
+            inherit_streams = False
 
-        result = Environment( self.current_directory, parent, variables )
+        if inherit_streams:
+            standard_output = self.standard_output.clone()
+            error_output = self.error_output.clone()
+        else:
+            standard_output = None
+            error_output = None
+
+        result = Environment( self.current_directory, parent, variables, standard_output, error_output )
 
         return result
 
@@ -146,10 +157,12 @@ class Environment( object ):
             self._previous_working_directory = os.getcwd()
             self._previous_standard_output = sys.stdout
             self._previous_error_output = sys.stderr
+            self._previous_environment_variables = os.environ
 
             os.chdir( self.current_directory )
             sys.stdout = self.standard_output
             sys.stderr = self.error_output
+            os.environ = self.variables
 
             self._attached = True
 
@@ -164,6 +177,7 @@ class Environment( object ):
             os.chdir( self._previous_working_directory )
             sys.stdout = self._previous_standard_output
             sys.stderr = self._previous_error_output
+            os.environ = self._previous_environment_variables
 
             self._attached = False
 
@@ -221,7 +235,14 @@ class EnvironmentBuilder( object ):
     error_output = property( get_error_output, set_error_output, None, None )
 
     def inherit_starting_variables( self ):
-        raise NotImplementedError( "Add all of the current environment variables to the new environment." )
+        starting_variables = {}
+
+        import os
+        for key in os.environ:
+            starting_variables[ key ] = os.environ[ key ]
+
+        self.starting_variables = starting_variables
+
         return self
 
     def build( self ):
