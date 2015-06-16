@@ -4,6 +4,10 @@ from pyshell.exceptions import ExecutionValueException
 from .internal_command import InternalCommand
 
 class ChangeDirectoryCommand( InternalCommand ):
+    class SpecialDirectories( object ):
+        CurrentDirectory = "."
+        ParentDirectory = ".."
+
     def __init__( self, path, *options, **kwargs ):
         self.path = path
         InternalCommand.__init__( self, "cd", [ path ], *options, **kwargs )
