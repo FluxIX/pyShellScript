@@ -32,9 +32,16 @@ class Environment( object ):
         self._attached = False
 
     def __del__( self ):
-        self._detach()
-        del self.standard_output
-        del self.error_output
+        if self._detach():
+            def is_internal_stream( stream ):
+                import sys
+                return stream is sys.__stdout__ or stream is sys.__stderr__ or stream is sys.__stdin__
+
+            if not is_internal_stream( self.standard_output ):
+                del self.__standard_output
+
+            if not is_internal_stream( self.error_output ):
+                del self.__error_output
 
     def get_directory_stack( self ):
         return self.__directory_stack
@@ -223,6 +230,7 @@ class EnvironmentBuilder( object ):
 
     def set_standard_output( self, value ):
         self.__standard_output = value
+        return self
 
     standard_output = property( get_standard_output, set_standard_output, None, None )
 
@@ -231,6 +239,7 @@ class EnvironmentBuilder( object ):
 
     def set_error_output( self, value ):
         self.__error_output = value
+        return self
 
     error_output = property( get_error_output, set_error_output, None, None )
 

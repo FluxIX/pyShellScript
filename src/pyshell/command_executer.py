@@ -1,14 +1,35 @@
+from pyshell.tee_output_file import TeeOutputFileBuilder
 from .environment import EnvironmentBuilder
 
 class CommandExecuter( object ):
-    def __init__( self, environment = None ):
+    class OptionalArguments( object ):
+        DryRun = "dry_run"
+
+    def __init__( self, environment = None, **kwargs ):
         if environment is None:
-            environment = EnvironmentBuilder().build()
+            import sys
+            standard_output = TeeOutputFileBuilder().add_stream( sys.__stdout__ ).build()
+            error_output = TeeOutputFileBuilder().add_stream( sys.__stderr__ ).build()
+
+            environment = EnvironmentBuilder().set_standard_output( standard_output ).set_error_output( error_output ).build()
+
+        if self.OptionalArguments.DryRun in kwargs:
+            self.dry_run = kwargs[ self.OptionalArguments.DryRun ]
+        else:
+            self.dry_run = False
 
         self.environment_stack = [ environment ]
         self.history = []
 
         self.current_environment._attach()
+
+    def _get_dry_run( self ):
+        return self.__dry_run
+
+    def _set_dry_run( self, value ):
+        self.__dry_run = bool( value )
+
+    dry_run = property( _get_dry_run, _set_dry_run, None, None )
 
     def _get_environment_stack( self ):
         return self.__environment_stack
@@ -37,8 +58,11 @@ class CommandExecuter( object ):
     history = property( get_history, _set_history, None, None )
 
     def execute_command( self, command ):
-#        print( "Executing command: %s" % str( command ) )
-        result = command.execute( self )
+        if self.dry_run:
+            print( "Executing command: %s" % str( command ) )
+            result = True
+        else:
+            result = command.execute( self )
 
         if result:
             self.history.append( command )
